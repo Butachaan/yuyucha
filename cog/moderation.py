@@ -344,6 +344,11 @@ class Moderation(commands.Cog):
         progress.delete()
         await ctx.send(embed=emb)
 
+    @commands.command(name="adminlist")
+    async def adminlist(self,ctx):
+        e = discord.Embed(title="運営情報",description="**owner**=`Butachaan#9631`\n**admin**=`蘭玲#6910`")
+        await ctx.send(embed=e)
+
 
 def setup(bot):
     bot.add_cog(Moderation(bot))

@@ -10,9 +10,10 @@ import asyncio
 import random
 import datetime
 from discord.ext import commands
-bot = commands.Bot(command_prefix=f.prefix)
-intents=discord.Intents.all()
-intents.members = True
+Intents = discord.Intents()
+Intents.members = True
+Intents.presences = True
+bot = commands.Bot(command_prefix=f.prefix,Intents=Intents)
 
 
 
@@ -115,7 +116,7 @@ bot = commands.Bot(command_prefix="y/", help_command=Help(), description="```y/h
 
 developer = f.bot_developers
 
-
+bot.load_extension("jishaku")
 bot.load_extension('cog.info')
 bot.load_extension('cog.admin')
 bot.load_extension('cog.other')
@@ -123,7 +124,7 @@ bot.load_extension('cog.moderation')
 bot.load_extension('cog.report')
 bot.load_extension('cog.fun')
 bot.load_extension('cog.help')
-bot.load_extension('jishaku')
+
 
 @bot.event
 async def on_command(ctx):
@@ -143,6 +144,106 @@ async def on_ready():
     activity = discord.Game(name="y/helpsで確認", type=3)
     await bot.change_presence(status=discord.Status.idle, activity=activity)
     print("Bot is ready!")
+
+
+
+
+@bot.event
+async def on_member_join(member):
+    e = discord.Embed(title=member.id)
+    ch = bot.get_channel(f.channels)
+    await ch.send(embed=e)
+
+@bot.event
+async def on_guild_channel_create(channel):
+    e = discord.Embed(title="チャンネル作成", timestamp=channel.created_at,color=0x5d00ff)
+    e.add_field(name="チャンネル名", value=channel.mention)
+    channel = discord.utils.get(channel.guild.channels, name="幽々子ログ")
+    await channel.send(embed=e)
+
+@bot.event
+async def on_member_ban(g, user):
+    guild = bot.get_guild(g.id)
+    bl = await guild.audit_logs(limit=1, action=discord.AuditLogAction.ban).flatten()
+    e = discord.Embed(title="ユーザーのban", color=0x5d00ff)
+    e.add_field(name="ユーザー名", value=str(user))
+    e.add_field(name="実行者", value=str(bl[0].user))
+    channel = discord.utils.get(bot.get.channels, name="幽々子ログ")
+    await channel.send(embed=e)
+
+@bot.event
+async def on_message_delete(message):
+    if not message.author.bot:
+        e = discord.Embed(title="メッセージ削除", color=0x5d00ff)
+        e.add_field(name="メッセージ", value=message.content)
+        e.add_field(name="メッセージ送信者", value=message.author.mention)
+        e.add_field(name="メッセージチャンネル", value=message.channel.mention)
+        e.add_field(name="メッセージのid", value=message.id)
+
+        channel = discord.utils.get(message.guild.channels, name="幽々子ログ")
+        await channel.send(embed=e)
+
+@bot.event
+async def on_message_edit(before, after):
+    channel = discord.utils.get(before.guild.channels, name="幽々子ログ")
+    embed = discord.Embed(
+        title="メッセージが編集されました",
+        timestamp=after.created_at,
+        description = f"<#{before.channel.id}>で<@!{before.author.id}>がメッセージを編集しました",
+        colour = discord.Colour(0x5d00ff)
+        )
+    embed.set_author(name=f'{before.author.name}#{before.author.discriminator}', icon_url=before.author.avatar_url)
+    embed.set_footer(text=f"Author ID:{before.author.id} • Message ID: {before.id}")
+    embed.add_field(name='Before:', value=before.content, inline=False)
+    embed.add_field(name="After:", value=after.content, inline=False)
+    embed.add_field(name="メッセージのURL", value=after.jump_url)
+    await channel.send(embed=embed)
+
+@bot.event
+async def on_guild_role_create(role):
+    e = discord.Embed(title="役職の作成", color=0x5d00ff,timestamp=role.created_at)
+    e.add_field(name="役職名", value=role.name)
+    e.add_field(name="役職名", value=role.id)
+
+
+    ch = discord.utils.get(role.guild.channels, name="幽々子ログ")
+    await ch.send(embed=e)
+
+@bot.event
+async def on_guild_role_delete(role):
+    e = discord.Embed(title="役職の削除", color=0x5d00ff)
+    e.add_field(name="役職名", value=role.name)
+
+    ch = discord.utils.get(role.guild.channels, name="幽々子ログ")
+    await ch.send(embed=e)
+
+
+@bot.event
+async def on_guild_channel_delete(channel):
+    e = discord.Embed(title="チャンネル削除", color=0x5d00ff)
+    e.add_field(name="チャンネル名", value=channel.name)
+    ch = discord.utils.get(channel.guild.channels, name="幽々子ログ")
+    await ch.send(embed=e)
+
+
+
+
+@bot.event
+async def on_guild_channel_update(before, after):
+    channel = discord.utils.get(before.guild.channels, name="幽々子ログ")
+    embed = discord.Embed(title="Channel Name Updated", description="チャンネルがアップデートしました",color=0x5d00ff)
+    embed.add_field(name="Old name", value=f"The old name was: {before}.", inline=True)
+    embed.add_field(name="New name", value=f"The old name was: {after}.", inline=False)
+    await channel.send(embed=embed)
+
+@bot.event
+async def on_voice_state_update(before, after):
+    if before.voice.voice_channel is None and after.voice.voice_channel is not None:
+        for channel in before.server.channels:
+            if channel.name == 'あざ':
+                await bot.send_message(channel, "Howdy")
+
+
 
 
 @bot.event
