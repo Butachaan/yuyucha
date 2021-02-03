@@ -172,6 +172,17 @@ async def on_member_ban(g, user):
     await channel.send(embed=e)
 
 @bot.event
+async def on_invite_create(invite):
+    e = discord.Embed(title="サーバー招待の作成", color=0x5d00ff)
+    e.add_field(name="作成ユーザー", value=str(invite.inviter))
+    e.add_field(name="使用可能回数", value=str(invite.max_uses))
+    e.add_field(name="使用可能時間", value=str(invite.max_age))
+    e.add_field(name="チャンネル", value=str(invite.channel.mention))
+    e.add_field(name="コード", value=str(invite.code))
+    channel = discord.utils.get(invite.guild.channels, name="幽々子ログ")
+    await channel.send(embed=e)
+
+@bot.event
 async def on_message_delete(message):
     if not message.author.bot:
         e = discord.Embed(title="メッセージ削除", color=0x5d00ff)
