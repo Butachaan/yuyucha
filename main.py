@@ -5,12 +5,12 @@ import json
 from typing import Union
 import logging
 import textwrap
-
+from discord.utils import get
 import asyncio
 import random
 import datetime
 from discord.ext import commands
-Intents = discord.Intents()
+Intents = discord.Intents.default()
 Intents.members = True
 Intents.presences = True
 bot = commands.Bot(command_prefix=f.prefix,Intents=Intents)
@@ -112,7 +112,7 @@ class Help(commands.HelpCommand):
         return f"{command.qualified_name} にサブコマンドは登録されていません。"
 
 
-bot = commands.Bot(command_prefix="y/", help_command=Help(), description="```y/helps で調べられます``` ")
+bot = commands.Bot(command_prefix="y/", help_command=Help(), description="```y/helps で調べられます``` ",Intents=Intents)
 
 developer = f.bot_developers
 
@@ -145,14 +145,23 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.idle, activity=activity)
     print("Bot is ready!")
 
-
-
-
 @bot.event
 async def on_member_join(member):
-    e = discord.Embed(title=member.id)
-    ch = bot.get_channel(f.channels)
-    await ch.send(embed=e)
+    channel = discord.utils.get(member.guild.text_channels, name="幽々子ログ")
+    if channel:
+        embed = discord.Embed(
+            description="Welcome to our guild!",
+            color=0x5d00ff,
+        )
+        embed.set_thumbnail(url=member.avatar_url)
+        embed.set_author(name=member.name, icon_url=member.avatar_url)
+        embed.set_footer(text=member.guild, icon_url=member.guild.icon_url)
+
+
+        await channel.send(embed=embed)
+
+
+
 
 @bot.event
 async def on_guild_channel_create(channel):
@@ -181,6 +190,9 @@ async def on_invite_create(invite):
     e.add_field(name="コード", value=str(invite.code))
     channel = discord.utils.get(invite.guild.channels, name="幽々子ログ")
     await channel.send(embed=e)
+
+
+
 
 @bot.event
 async def on_message_delete(message):
