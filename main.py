@@ -5,15 +5,19 @@ import json
 from typing import Union
 import logging
 import textwrap
-from discord.utils import get
+
 import asyncio
 import random
 import datetime
+import DiscordUtils
+
 from discord.ext import commands
 Intents = discord.Intents.default()
 Intents.members = True
 Intents.presences = True
+
 bot = commands.Bot(command_prefix=f.prefix,Intents=Intents)
+
 
 
 
@@ -112,9 +116,10 @@ class Help(commands.HelpCommand):
         return f"{command.qualified_name} にサブコマンドは登録されていません。"
 
 
-bot = commands.Bot(command_prefix="y/", help_command=Help(), description="```y/helps で調べられます``` ",Intents=Intents)
+bot = commands.Bot(command_prefix="y/", help_command=Help(), description="```y/helps で調べられます``` ")
 
 developer = f.bot_developers
+
 
 bot.load_extension("jishaku")
 bot.load_extension('cog.info')
@@ -145,22 +150,19 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.idle, activity=activity)
     print("Bot is ready!")
 
+
+
 @bot.event
-async def on_member_join(member):
-    channel = discord.utils.get(member.guild.text_channels, name="幽々子ログ")
-    if channel:
-        embed = discord.Embed(
-            description="Welcome to our guild!",
-            color=0x5d00ff,
-        )
-        embed.set_thumbnail(url=member.avatar_url)
-        embed.set_author(name=member.name, icon_url=member.avatar_url)
-        embed.set_footer(text=member.guild, icon_url=member.guild.icon_url)
+async def on_user_update(before, after):
+    if before.name != after.name:
+        e = discord.Embed(title="ニックネームが変わりました", color=0x5d00ff, timestamp=datetime.utcnow())
+        fields = [("Before", before.name, False), ("After", after.name, False)]
 
+        for name, value, inline in fields:
+            e.add_field(name=name, value=value, inline=inline)
 
-        await channel.send(embed=embed)
-
-
+        channel = discord.utils.get(before.get_channels, name="幽々子ログ")
+        await channel.send(embed=e)
 
 
 @bot.event
@@ -208,7 +210,7 @@ async def on_message_delete(message):
 
 @bot.event
 async def on_message_edit(before, after):
-    channel = discord.utils.get(before.guild.channels, name="幽々子ログ")
+
     embed = discord.Embed(
         title="メッセージが編集されました",
         timestamp=after.created_at,
@@ -220,7 +222,11 @@ async def on_message_edit(before, after):
     embed.add_field(name='Before:', value=before.content, inline=False)
     embed.add_field(name="After:", value=after.content, inline=False)
     embed.add_field(name="メッセージのURL", value=after.jump_url)
+    channel = discord.utils.get(after.guild.channels, name="幽々子ログ")
     await channel.send(embed=embed)
+
+
+
 
 @bot.event
 async def on_guild_role_create(role):
