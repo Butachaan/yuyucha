@@ -12,11 +12,10 @@ import datetime
 import DiscordUtils
 
 from discord.ext import commands
-Intents = discord.Intents.default()
-Intents.members = True
-Intents.presences = True
+Intents = discord.Intents.all()
 
-bot = commands.Bot(command_prefix=f.prefix,Intents=Intents)
+
+bot = commands.Bot(command_prefix=f.prefix,owner_id=478126443168006164,Intents=Intents)
 
 
 
@@ -200,13 +199,36 @@ async def on_invite_create(invite):
 async def on_message_delete(message):
     if not message.author.bot:
         e = discord.Embed(title="メッセージ削除", color=0x5d00ff)
-        e.add_field(name="メッセージ", value=message.content)
+        e.add_field(name="メッセージ", value=f'```{message.content}```',inline=False)
         e.add_field(name="メッセージ送信者", value=message.author.mention)
         e.add_field(name="メッセージチャンネル", value=message.channel.mention)
         e.add_field(name="メッセージのid", value=message.id)
 
         channel = discord.utils.get(message.guild.channels, name="幽々子ログ")
         await channel.send(embed=e)
+
+@bot.event
+async def on_guild_role_update(before, after):
+    print("1")
+    if before.name != after.name:
+        embed = discord.Embed(title="Role " + before.name + " renamed to " + after.name + ".",color=0x5d00ff)
+
+        embed.set_author(name="名前が変りました")
+        embed.add_field(name="id",value=after.id)
+        embed.add_field(name="名前",value=after.name)
+        embed.add_field(name="位置", value=after.position)
+        channel = discord.utils.get(before.guild.channels, name="幽々子ログ")
+        await channel.send(embed=embed)
+
+    if before.color != after.color:
+        e = discord.Embed(title="Role " + before.name + " change to " + after.name + ".",color=0x5d00ff)
+        e.set_author(name="色が変りました")
+        e.add_field(name="id", value=after.id)
+        e.add_field(name="名前", value=after.name)
+        e.add_field(name="位置",value=after.position)
+        channel = discord.utils.get(before.guild.channels, name="幽々子ログ")
+        await channel.send(embed=e)
+
 
 @bot.event
 async def on_message_edit(before, after):
@@ -232,8 +254,8 @@ async def on_message_edit(before, after):
 async def on_guild_role_create(role):
     e = discord.Embed(title="役職の作成", color=0x5d00ff,timestamp=role.created_at)
     e.add_field(name="役職名", value=role.name)
-    e.add_field(name="役職名", value=role.id)
 
+    e.add_field(name="id", value=role.id)
 
     ch = discord.utils.get(role.guild.channels, name="幽々子ログ")
     await ch.send(embed=e)
@@ -287,6 +309,40 @@ async def on_command_error(ctx, error):
     embed.add_field(name="発生エラー", value=error, inline=False)
     m = await bot.get_channel(ch).send(embed=embed)
     await ctx.send("エラーが発生しました")
+
+@bot.event
+async def on_member_join(member):
+    # On member joins we find a channel called general and if it exists,
+    # send an embed welcoming them to our guild
+    channel = discord.utils.get(member.guild.text_channels, name="幽々子ログ")
+    if channel:
+        embed = discord.Embed(
+            description="Welcome to our guild!",
+            color=0x5d00ff,
+        )
+        embed.set_thumbnail(url=member.avatar_url)
+        embed.set_author(name=member.name, icon_url=member.avatar_url)
+        embed.set_footer(text=member.guild, icon_url=member.guild.icon_url)
+        embed.timestamp = datetime.datetime.utcnow()
+
+        await channel.send(embed=embed)
+
+@bot.event
+async def on_member_remove(member):
+    # On member remove we find a channel called general and if it exists,
+    # send an embed saying goodbye from our guild-
+    channel = discord.utils.get(member.guild.text_channels, name="recording")
+    if channel:
+        embed = discord.Embed(
+            description="Goodbye from all of us..",
+            color=0x5d00ff,
+        )
+        embed.set_thumbnail(url=member.avatar_url)
+        embed.set_author(name=member.name, icon_url=member.avatar_url)
+        embed.set_footer(text=member.guild, icon_url=member.guild.icon_url)
+        embed.timestamp = datetime.datetime.utcnow()
+
+        await channel.send(embed=embed)
 
 
 

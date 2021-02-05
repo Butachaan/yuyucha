@@ -117,5 +117,7 @@ class help(commands.Cog):
         embeds = [e1, e2, e3, e4, e5, e6, e7]
         await paginator.run(embeds)
 
+
+
 def setup(bot):
     bot.add_cog(help(bot))
