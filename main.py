@@ -136,7 +136,7 @@ async def on_command(ctx):
     e.set_author(name=f"{ctx.author}({ctx.author.id})", icon_url=ctx.author.avatar_url_as(static_format="png"))
     e.add_field(name="実行サーバー", value=f"{ctx.guild.name}({ctx.guild.id})")
     e.add_field(name="実行チャンネル", value=ctx.channel.name)
-
+    e.set_thumbnail(url=ctx.guild.icon_url)
     e.timestamp = ctx.message.created_at
     ch = bot.get_channel(803558816834650152)
 
@@ -302,6 +302,7 @@ async def on_command_error(ctx, error):
     ch = 799505924280156192
     embed = discord.Embed(title="エラー情報", description="", color=0xf00)
     embed.add_field(name="エラー発生サーバー名", value=ctx.guild.name, inline=False)
+    embed.set_thumbnail(url=ctx.guild.icon_url)
     embed.add_field(name="エラー発生サーバーID", value=ctx.guild.id, inline=False)
     embed.add_field(name="エラー発生ユーザー名", value=ctx.author.name, inline=False)
     embed.add_field(name="エラー発生ユーザーID", value=ctx.author.id, inline=False)
