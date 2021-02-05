@@ -193,7 +193,7 @@ class AdminCog(commands.Cog, name="Admin"):
             await ctx.send("> 送信できません！\n　メッセージの送信に失敗しました。")
 
     @commands.check(check_if_it_is_me)
-    @commands.command()
+    @commands.command(name="news")
     async def news(self, ctx, *, message):
         """```admin```"""
         await ctx.message.delete()
