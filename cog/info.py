@@ -13,7 +13,7 @@ from discord.ext import commands
 from platform import python_version
 from discord import __version__ as discord_version
 from asyncio import sleep
-import json
+
 from discord.utils import get
 
 from collections import OrderedDict, deque, Counter
@@ -39,7 +39,10 @@ import io
 from contextlib import redirect_stdout
 import re
 
+
 import tracemalloc
+
+
 
 
 class infoCog(commands.Cog):
@@ -184,7 +187,7 @@ class infoCog(commands.Cog):
         e = discord.Embed(color=0xb300ff)
         roles = [r.mention for r in user.roles]
         e.set_author(name="ユーザー情報")
-        perms = "`" + "`, `".join(perm for perm, value in user.guild_permissions if value) + "`"
+
         since_created = (ctx.message.created_at - user.created_at).days
         since_joined = (ctx.message.created_at - user.joined_at).days
         user_created = user.created_at.strftime("%d %b %Y %H:%M")
@@ -204,8 +207,14 @@ class infoCog(commands.Cog):
         else:
             e.add_field(name="voice", value="入っていません")
 
+        if user.bot:
+            e.add_field(name="Botですか",value="はい")
+        else:
+            e.add_field(name="Botですか", value="いいえ")
+
+
         e.add_field(name="ニックネーム", value=user.display_name)
-        e.add_field(name="bot?", value=user.bot)
+
         e.add_field(name="ブースト!", value=bool(user.premium_since), inline=True)
 
         e.add_field(name="Discord参加日:", value=created_at, inline=True)
@@ -219,20 +228,24 @@ class infoCog(commands.Cog):
                         value=', '.join(roles) if len(roles) < 40 else f'{len(roles)} roles', inline=False)
 
         e.add_field(name='Avatar Link', value=user.avatar_url, inline=False)
-
         if user.avatar:
             e.set_thumbnail(url=user.avatar_url)
 
         if isinstance(user, discord.User):
             e.set_footer(text='This member is not in this server.')
 
-        await ctx.reply(embed=e)
 
-        e = discord.Embed(color=0xb300ff)
-        if isinstance(user, discord.Member):
-            e.add_field(name='権限', value=perms)
+
+
+
+
+
+
+
 
         await ctx.send(embed=e)
+
+
 
     @commands.command()
     async def user(self, ctx, *, user: Union[discord.Member, discord.User] = None):
@@ -258,9 +271,10 @@ class infoCog(commands.Cog):
         if roles:
             e.add_field(name='Roles', value=', '.join(roles) if len(roles) < 10 else f'{len(roles)} roles',
                         inline=False)
-
         if user.avatar:
             e.set_thumbnail(url=user.avatar_url)
+
+
 
         if isinstance(user, discord.User):
             e.set_footer(text='This member is not in this server.')
@@ -299,7 +313,7 @@ class infoCog(commands.Cog):
         if role.permissions.manage_guild:
             perms += "サーバーの管理, "
         if role.permissions.add_reactions:
-            perms += "リアクションの追加, "
+             perms += "リアクションの追加, "
         if role.permissions.view_audit_log:
             perms += "サーバーの統計を表示, "
         if role.permissions.read_messages:

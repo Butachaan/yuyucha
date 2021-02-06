@@ -23,6 +23,8 @@ from contextlib import redirect_stdout
 import asyncio
 
 
+with open('./config.json', 'r') as cjson:
+    config = json.load(cjson)
 
 
 
@@ -32,13 +34,16 @@ class AdminCog(commands.Cog, name="Admin"):
     管理者権限が無ければ使えません。
     """
 
-
+    async def is_owner(ctx):
+        return ctx.author.id == 478126443168006164,691300045454180383
 
     def __init__(self, bot):
         self.bot = bot
         self._last_result = None
         self.stream = io.StringIO()
         self.channel = None
+
+
 
 
     def cleanup_code(self, content):
@@ -50,8 +55,24 @@ class AdminCog(commands.Cog, name="Admin"):
         # remove `foo`
         return content.strip('` \n')
 
-    @commands.command(name="load", description="```loadします```")
+    @commands.command(hidden=True)
     @commands.is_owner()
+    async def say_bete(self, ctx, channel, *, message):
+        """Echo a string into a different channel."""
+        """
+        :params channel: channel to echo into
+        :params message: message to echo."""
+        if not ctx.message.channel_mentions:
+            return await ctx.send(
+                f'<command> <channel mention> <message> u idiot')
+        try:
+            for channel in ctx.message.channel_mentions:
+                await channel.send(f'{message}')
+        except Exception:
+            ctx.send('Error when trying to send fam')
+
+    @commands.command(name="load", description="```loadします```")
+    @commands.check(is_owner)
     async def load(self, ctx, *, module):
         """`admin`"""
         try:
@@ -102,7 +123,7 @@ class AdminCog(commands.Cog, name="Admin"):
         msg += '```'
         await ctx.send(msg)
 
-    @commands.is_owner()
+    @commands.check(is_owner)
     @commands.command(pass_context=True, name='eval')
     async def _eval(self, ctx, *, body: str):
         """Evaluates a code"""

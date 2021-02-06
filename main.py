@@ -9,21 +9,17 @@ import textwrap
 import asyncio
 import random
 import datetime
-import DiscordUtils
-
-with open('./config.json', 'r') as cjson:
-    config = json.load(cjson)
-
 
 from discord.ext import commands
-intents:discord.Intents = discord.Intents.default()
-intents.members = True
-
-bot = commands.Bot(command_prefix=config["prefix"],owner_id=478126443168006164,intents=intents)
-bot.config = config
+Intents = discord.Intents.default()
+Intents.members = True
+Intents.presences = True
 
 
+with open(f"config.json","r",encoding="utf-8") as j:
+    f = json.load(j)
 
+bot = commands.Bot(command_prefix=f["prefix"],Intents=Intents)
 
 class Help(commands.HelpCommand):
     def __init__(self):
@@ -139,9 +135,9 @@ async def on_command(ctx):
     e.set_author(name=f"{ctx.author}({ctx.author.id})", icon_url=ctx.author.avatar_url_as(static_format="png"))
     e.add_field(name="実行サーバー", value=f"{ctx.guild.name}({ctx.guild.id})")
     e.add_field(name="実行チャンネル", value=ctx.channel.name)
-    e.set_thumbnail(url=ctx.guild.icon_url)
+
     e.timestamp = ctx.message.created_at
-    ch = bot.get_channel(797335889431756800)
+    ch = bot.get_channel(803558816834650152)
 
     await ch.send(embed=e)
 
@@ -154,17 +150,6 @@ async def on_ready():
 
 
 
-@bot.event
-async def on_user_update(before, after):
-    if before.name != after.name:
-        e = discord.Embed(title="ニックネームが変わりました", color=0x5d00ff, timestamp=datetime.utcnow())
-        fields = [("Before", before.name, False), ("After", after.name, False)]
-
-        for name, value, inline in fields:
-            e.add_field(name=name, value=value, inline=inline)
-
-        channel = discord.utils.get(before.get_channels, name="幽々子ログ")
-        await channel.send(embed=e)
 
 
 @bot.event
@@ -202,38 +187,13 @@ async def on_invite_create(invite):
 async def on_message_delete(message):
     if not message.author.bot:
         e = discord.Embed(title="メッセージ削除", color=0x5d00ff)
-        e.add_field(name="メッセージ", value=f'```{message.content}```',inline=False)
+        e.add_field(name="メッセージ", value=message.content)
         e.add_field(name="メッセージ送信者", value=message.author.mention)
         e.add_field(name="メッセージチャンネル", value=message.channel.mention)
         e.add_field(name="メッセージのid", value=message.id)
 
         channel = discord.utils.get(message.guild.channels, name="幽々子ログ")
         await channel.send(embed=e)
-
-@bot.event
-async def on_guild_role_update(before, after):
-    print("1")
-    if before.name != after.name:
-        embed = discord.Embed(title="Role " + before.name + " renamed to " + after.name + ".",color=0x5d00ff)
-
-        embed.set_author(name="名前が変りました")
-        embed.add_field(name="id",value=after.id)
-        embed.add_field(name="名前",value=after.name)
-        embed.add_field(name="位置", value=after.position)
-        channel = discord.utils.get(before.guild.channels, name="幽々子ログ")
-        await channel.send(embed=embed)
-
-    if before.color != after.color:
-        e = discord.Embed(title="Role " + before.name + " change to " + after.name + ".",color=0x5d00ff)
-        e.set_author(name="色が変りました")
-        e.add_field(name="id", value=after.id)
-        e.add_field(name="名前", value=after.name)
-        e.add_field(name="位置",value=after.position)
-        channel = discord.utils.get(before.guild.channels, name="幽々子ログ")
-        await channel.send(embed=e)
-
-
-
 
 @bot.event
 async def on_message_edit(before, after):
@@ -252,15 +212,12 @@ async def on_message_edit(before, after):
     channel = discord.utils.get(after.guild.channels, name="幽々子ログ")
     await channel.send(embed=embed)
 
-
-
-
 @bot.event
 async def on_guild_role_create(role):
     e = discord.Embed(title="役職の作成", color=0x5d00ff,timestamp=role.created_at)
     e.add_field(name="役職名", value=role.name)
+    e.add_field(name="役職名", value=role.id)
 
-    e.add_field(name="id", value=role.id)
 
     ch = discord.utils.get(role.guild.channels, name="幽々子ログ")
     await ch.send(embed=e)
@@ -304,97 +261,21 @@ async def on_voice_state_update(before, after):
 
 @bot.event
 async def on_command_error(ctx, error):
-    if isinstance(error, commands.errors.MissingPermissions):
-        e1 = discord.Embed(title="コマンドエラー")
-        e1.add_field(name="実行ユーザー", value=ctx.author)
-        e1.add_field(name="内容", value="権限がありません")
-        await ctx.send(embed=e1)
-
-    elif isinstance(error,commands.MissingRequiredArgument):
-        e2 = discord.Embed(title="コマンドエラー")
-        e2.add_field(name="実行ユーザー",value=ctx.author)
-        e2.add_field(name="内容",value="必要なすべての引数を入力してください")
-        await ctx.send(embed=e2)
-
-    elif isinstance(error, commands.CommandNotFound):
-        e3 = discord.Embed(title="コマンドエラー")
-        e3.add_field(name="実行ユーザー", value=ctx.author)
-        e3.add_field(name="内容", value="コマンドが存在しません")
-        await ctx.send(embed=e3)
-
-    elif isinstance(error, commands.ChannelNotFound):
-        e4 = discord.Embed(title="コマンドエラー")
-        e4.add_field(name="実行ユーザー", value=ctx.author)
-        e4.add_field(name="内容", value="チャンネルが存在しません")
-        await ctx.send(embed=e4)
-
-    elif isinstance(error, commands.UserNotFound):
-        e5 = discord.Embed(title="コマンドエラー")
-        e5.add_field(name="実行ユーザー", value=ctx.author)
-        e5.add_field(name="内容", value="ユーザーが存在しません")
-        await ctx.send(embed=e5)
-
-
-    elif isinstance(error,commands.RoleNotFound):
-        e6 = discord.Embed(title="コマンドエラー")
-        e6.add_field(name="実行ユーザー", value=ctx.author)
-        e6.add_field(name="内容", value="役職が存在しません")
-        await ctx.send(embed=e6)
-
-    elif isinstance(error,commands.MessageNotFound):
-        e7 = discord.Embed(title="コマンドエラー")
-        e7.add_field(name="実行ユーザー", value=ctx.author)
-        e7.add_field(name="内容", value="メッセージが存在しません")
-        await ctx.send(embed=e7)
-
-    elif isinstance(error,commands.MessageNotFound):
-        e8 = discord.Embed(title="コマンドエラー")
-        e8.add_field(name="実行ユーザー", value=ctx.author)
-        e8.add_field(name="内容", value="ユーザーが存在しません")
-        await ctx.send(embed=e8)
+    ch = 799505924280156192
+    embed = discord.Embed(title="エラー情報", description="", color=0xf00)
+    embed.add_field(name="エラー発生サーバー名", value=ctx.guild.name, inline=False)
+    embed.add_field(name="エラー発生サーバーID", value=ctx.guild.id, inline=False)
+    embed.add_field(name="エラー発生ユーザー名", value=ctx.author.name, inline=False)
+    embed.add_field(name="エラー発生ユーザーID", value=ctx.author.id, inline=False)
+    embed.add_field(name="エラー発生コマンド", value=ctx.message.content, inline=False)
+    embed.add_field(name="発生エラー", value=error, inline=False)
+    m = await bot.get_channel(ch).send(embed=embed)
+    await ctx.send("エラーが発生しました")
 
 
 
 
-@bot.event
-async def on_member_join(member):
-    # On member joins we find a channel called general and if it exists,
-    # send an embed welcoming them to our guild
-    channel = discord.utils.get(member.guild.text_channels, name="幽々子ログ")
-    if channel:
-        embed = discord.Embed(
-            description="Welcome to our guild!",
-            color=0x5d00ff,
-        )
-        embed.set_thumbnail(url=member.avatar_url)
-        embed.set_author(name=member.name, icon_url=member.avatar_url)
-        embed.set_footer(text=member.guild, icon_url=member.guild.icon_url)
-        embed.timestamp = datetime.datetime.utcnow()
-
-        await channel.send(embed=embed)
-
-
-
-@bot.event
-async def on_member_remove(member):
-    # On member remove we find a channel called general and if it exists,
-    # send an embed saying goodbye from our guild-
-    channel = discord.utils.get(member.guild.text_channels, name="recording")
-    if channel:
-        embed = discord.Embed(
-            description="Goodbye from all of us..",
-            color=0x5d00ff,
-        )
-        embed.set_thumbnail(url=member.avatar_url)
-        embed.set_author(name=member.name, icon_url=member.avatar_url)
-        embed.set_footer(text=member.guild, icon_url=member.guild.icon_url)
-        embed.timestamp = datetime.datetime.utcnow()
-
-        await channel.send(embed=embed)
-
-
-
-bot.run(config["TOKEN"])
+bot.run(f["TOKEN"])
 
 
 
