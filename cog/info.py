@@ -247,7 +247,7 @@ class infoCog(commands.Cog):
 
 
 
-    @commands.command()
+    @commands.command(name="user")
     async def user(self, ctx, *, user: Union[discord.Member, discord.User] = None):
         """Shows info about a user."""
 
