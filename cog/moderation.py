@@ -344,6 +344,10 @@ class Moderation(commands.Cog):
         e = discord.Embed(title="運営情報",description="**owner**=`Butachaan#9631`\n**admin**=`蘭玲#6910`")
         await ctx.send(embed=e)
 
+    @commands.has_permissions(manage_channels=True)
+    @commands.command(name="log_setting")
+    async def log_Setting(self,ctx):
+        await ctx.message.guild.create_text_channel("幽々子ログ")
 
 def setup(bot):
     bot.add_cog(Moderation(bot))

@@ -2,7 +2,10 @@ import textwrap
 import discord
 from discord import Intents
 import typing
+import colorsys
+import random
 import aiohttp
+import json
 from datetime import datetime, timedelta
 from typing import Optional
 from typing import Union
@@ -19,8 +22,9 @@ import traceback
 from contextlib import redirect_stdout
 import asyncio
 
-def check_if_it_is_me(ctx):
-    return ctx.message.author.id == 385746925040828418,478126443168006164
+
+
+
 
 class AdminCog(commands.Cog, name="Admin"):
     """
@@ -28,12 +32,14 @@ class AdminCog(commands.Cog, name="Admin"):
     管理者権限が無ければ使えません。
     """
 
+
+
     def __init__(self, bot):
         self.bot = bot
         self._last_result = None
         self.stream = io.StringIO()
         self.channel = None
-        self._last_result = None
+
 
     def cleanup_code(self, content):
         """Automatically removes code blocks from the code."""
@@ -96,7 +102,7 @@ class AdminCog(commands.Cog, name="Admin"):
         msg += '```'
         await ctx.send(msg)
 
-    @commands.check(check_if_it_is_me)
+    @commands.is_owner()
     @commands.command(pass_context=True, name='eval')
     async def _eval(self, ctx, *, body: str):
         """Evaluates a code"""
@@ -161,7 +167,6 @@ class AdminCog(commands.Cog, name="Admin"):
         await ctx.send(f'**:ok:** Ändere Status zu: **{discordStatus}**')
 
     @commands.command()
-    @commands.has_any_role(805783198567104523)
     @commands.is_owner()
     async def set_playing(self, ctx, *, game: str = None):
         """Set the playing status."""
@@ -172,7 +177,7 @@ class AdminCog(commands.Cog, name="Admin"):
         em.add_field(name="結果", value=f"{discord.Game(game)}に変わりました")
         await ctx.send(embed=em)
 
-    @commands.check(check_if_it_is_me)
+    @commands.is_owner()
     @commands.command(name="announce", aliases=["ann"], description="アナウンス用")
     async def announce(self, ctx, *, message):
         """```admin```"""
@@ -192,7 +197,7 @@ class AdminCog(commands.Cog, name="Admin"):
         except discord.HTTPException:
             await ctx.send("> 送信できません！\n　メッセージの送信に失敗しました。")
 
-    @commands.check(check_if_it_is_me)
+    @commands.is_owner()
     @commands.command(name="news")
     async def news(self, ctx, *, message):
         """```admin```"""
@@ -218,7 +223,7 @@ class AdminCog(commands.Cog, name="Admin"):
             await ctx.reply("私のニックネームを" + name + "に変更したよ。")
 
     @commands.command(name="dm", aliases=["d", "send"], description="```dmを送る```")
-    @commands.check(check_if_it_is_me)
+    @commands.is_owner()
     async def dm(self, ctx, user_id: int, *, message: str):
         """`admin`"""
         user = self.bot.get_user(user_id)

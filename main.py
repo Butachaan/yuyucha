@@ -1,6 +1,6 @@
 
 import discord
-import config as f
+
 import json
 from typing import Union
 import logging
@@ -11,12 +11,16 @@ import random
 import datetime
 import DiscordUtils
 
+with open('./config.json', 'r') as cjson:
+    config = json.load(cjson)
+
+
 from discord.ext import commands
-Intents = discord.Intents.all()
+intents:discord.Intents = discord.Intents.default()
+intents.members = True
 
-
-bot = commands.Bot(command_prefix=f.prefix,owner_id=478126443168006164,Intents=Intents)
-
+bot = commands.Bot(command_prefix=config["prefix"],owner_id=478126443168006164,intents=intents)
+bot.config = config
 
 
 
@@ -117,7 +121,6 @@ class Help(commands.HelpCommand):
 
 bot = commands.Bot(command_prefix="y/", help_command=Help(), description="```y/helps で調べられます``` ")
 
-developer = f.bot_developers
 
 
 bot.load_extension("jishaku")
@@ -138,7 +141,7 @@ async def on_command(ctx):
     e.add_field(name="実行チャンネル", value=ctx.channel.name)
     e.set_thumbnail(url=ctx.guild.icon_url)
     e.timestamp = ctx.message.created_at
-    ch = bot.get_channel(803558816834650152)
+    ch = bot.get_channel(797335889431756800)
 
     await ch.send(embed=e)
 
@@ -230,6 +233,8 @@ async def on_guild_role_update(before, after):
         await channel.send(embed=e)
 
 
+
+
 @bot.event
 async def on_message_edit(before, after):
 
@@ -299,17 +304,57 @@ async def on_voice_state_update(before, after):
 
 @bot.event
 async def on_command_error(ctx, error):
-    ch = 799505924280156192
-    embed = discord.Embed(title="エラー情報", description="", color=0xf00)
-    embed.add_field(name="エラー発生サーバー名", value=ctx.guild.name, inline=False)
-    embed.set_thumbnail(url=ctx.guild.icon_url)
-    embed.add_field(name="エラー発生サーバーID", value=ctx.guild.id, inline=False)
-    embed.add_field(name="エラー発生ユーザー名", value=ctx.author.name, inline=False)
-    embed.add_field(name="エラー発生ユーザーID", value=ctx.author.id, inline=False)
-    embed.add_field(name="エラー発生コマンド", value=ctx.message.content, inline=False)
-    embed.add_field(name="発生エラー", value=error, inline=False)
-    m = await bot.get_channel(ch).send(embed=embed)
-    await ctx.send("エラーが発生しました")
+    if isinstance(error, commands.errors.MissingPermissions):
+        e1 = discord.Embed(title="コマンドエラー")
+        e1.add_field(name="実行ユーザー", value=ctx.author)
+        e1.add_field(name="内容", value="権限がありません")
+        await ctx.send(embed=e1)
+
+    elif isinstance(error,commands.MissingRequiredArgument):
+        e2 = discord.Embed(title="コマンドエラー")
+        e2.add_field(name="実行ユーザー",value=ctx.author)
+        e2.add_field(name="内容",value="必要なすべての引数を入力してください")
+        await ctx.send(embed=e2)
+
+    elif isinstance(error, commands.CommandNotFound):
+        e3 = discord.Embed(title="コマンドエラー")
+        e3.add_field(name="実行ユーザー", value=ctx.author)
+        e3.add_field(name="内容", value="コマンドが存在しません")
+        await ctx.send(embed=e3)
+
+    elif isinstance(error, commands.ChannelNotFound):
+        e4 = discord.Embed(title="コマンドエラー")
+        e4.add_field(name="実行ユーザー", value=ctx.author)
+        e4.add_field(name="内容", value="チャンネルが存在しません")
+        await ctx.send(embed=e4)
+
+    elif isinstance(error, commands.UserNotFound):
+        e5 = discord.Embed(title="コマンドエラー")
+        e5.add_field(name="実行ユーザー", value=ctx.author)
+        e5.add_field(name="内容", value="ユーザーが存在しません")
+        await ctx.send(embed=e5)
+
+
+    elif isinstance(error,commands.RoleNotFound):
+        e6 = discord.Embed(title="コマンドエラー")
+        e6.add_field(name="実行ユーザー", value=ctx.author)
+        e6.add_field(name="内容", value="役職が存在しません")
+        await ctx.send(embed=e6)
+
+    elif isinstance(error,commands.MessageNotFound):
+        e7 = discord.Embed(title="コマンドエラー")
+        e7.add_field(name="実行ユーザー", value=ctx.author)
+        e7.add_field(name="内容", value="メッセージが存在しません")
+        await ctx.send(embed=e7)
+
+    elif isinstance(error,commands.MessageNotFound):
+        e8 = discord.Embed(title="コマンドエラー")
+        e8.add_field(name="実行ユーザー", value=ctx.author)
+        e8.add_field(name="内容", value="ユーザーが存在しません")
+        await ctx.send(embed=e8)
+
+
+
 
 @bot.event
 async def on_member_join(member):
@@ -327,6 +372,8 @@ async def on_member_join(member):
         embed.timestamp = datetime.datetime.utcnow()
 
         await channel.send(embed=embed)
+
+
 
 @bot.event
 async def on_member_remove(member):
@@ -347,7 +394,7 @@ async def on_member_remove(member):
 
 
 
-bot.run(f.TOKEN)
+bot.run(config["TOKEN"])
 
 
 
